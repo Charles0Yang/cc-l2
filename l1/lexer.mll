@@ -27,6 +27,7 @@ let int_reg_exp = ['0'-'9']+
 	  | '('            { LPAREN }
 	  | ')'            { RPAREN }
 	  | ';'	           { SEMICOLON }
+	  | ':'			   { COLON }
 	  | "->"		   { ARROW }
 	  | "if" 		   { IF }
  	  | "then" 		   { THEN }
