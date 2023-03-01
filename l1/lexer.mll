@@ -20,12 +20,25 @@ let int_reg_exp = ['0'-'9']+
 	rule token = parse
 	  | [' ' '\t']     { token lexbuf }     (* skip blanks *)
 	  | '+'            { ADD }
-	  | '-'            { SUB }
-	  | '*'            { MUL }
-	  | '/'            { DIV }
+	  | ">="		   { GTEQ }
+	  | ":="		   { ASSIGN }
+	  | "=" 		   { EQUAL }
+	  | "!" 		   { DEREF }
 	  | '('            { LPAREN }
 	  | ')'            { RPAREN }
 	  | ';'	           { SEMICOLON }
+	  | "->"		   { ARROW }
+	  | "if" 		   { IF }
+ 	  | "then" 		   { THEN }
+  	  | "else" 		   { ELSE }
+	  | "while" 	   { WHILE }
+  	  | "do" 		   { DO }
+	  | "skip"		   { SKIP }
+	  | "let"		   { LET }
+	  | "in"		   { IN }
+	  | "fn"		   { FN }
+	  | "val"		   { VAL }
+	  | "rec"		   { REC }
 	  | "begin"        { BEGIN }
 	  | "end"          { END }
 	  | eof            { EOF }  
