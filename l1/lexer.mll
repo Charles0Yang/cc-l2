@@ -31,6 +31,8 @@ let int_reg_exp = ['0'-'9']+
 	  | "if" 		   { IF }
  	  | "then" 		   { THEN }
   	  | "else" 		   { ELSE }
+	  | "true" 		   { TRUE }
+  	  | "false"		   { FALSE }
 	  | "while" 	   { WHILE }
   	  | "do" 		   { DO }
 	  | "skip"		   { SKIP }
