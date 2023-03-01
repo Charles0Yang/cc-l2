@@ -10,7 +10,7 @@ let get_loc = Parsing.symbol_start_pos
 %token<string> IDENT
 %token ADD SEMICOLON COLON GTEQ 
 %token EQUAL ASSIGN DEREF ARROW 
-%token IF THEN ELSE TRUE FALSE WHILE DO SKIP 
+%token IF THEN ELSE TRUE FALSE WHILE DO SKIP BOOL INTTYPE
 %token LET IN FN VAL REC
 %token LPAREN RPAREN
 %token BEGIN END
@@ -36,7 +36,6 @@ simple_expr:
 | TRUE                               { Past.Boolean (get_loc(), true)}
 | FALSE                              { Past.Boolean (get_loc(), false)}
 | LPAREN expr RPAREN                 { $2 }
-| LPAREN expr COMMA expr RPAREN      { Past.Pair(get_loc(), $2, $4) }
 | DEREF simple_expr              	 { Past.Deref(get_loc(), $2) }
 | REF simple_expr               	 { Past.Ref(get_loc(), $2) }
 
@@ -50,7 +49,7 @@ expr:
 | IF expr THEN expr ELSE expr END    { Past.If(get_loc(), $2, $4, $6) }
 | WHILE expr DO expr END             { Past.While(get_loc(), $2, $4) }
 | BEGIN exprlist END                 { Past.Seq(get_loc(), $2) }
-| FUN LPAREN IDENT COLON texpr RPAREN ARROW expr END 
+| FN LPAREN IDENT COLON texpr RPAREN ARROW expr END 
                                      { Past.Lambda(get_loc(), ($3, $5, $8)) } 
 | LET IDENT COLON texpr EQUAL expr IN expr END           { Past.Let (get_loc(), $2, $4, $6, $8) }
 | LET IDENT LPAREN IDENT COLON texpr RPAREN COLON texpr EQUAL expr IN expr END 
@@ -59,5 +58,12 @@ expr:
 exprlist:
 |   expr                             { [$1] }
 |   expr  SEMICOLON exprlist         { $1 :: $3  }
+
+texpr: 
+| BOOL                               { Past.TEbool  }
+| INTTYPE                            { Past.TEint  }
+| texpr ARROW texpr                  { Past.TEarrow ($1, $3)}
+| texpr ADD texpr                    { Past.TEunion ($1, $3)}
+| LPAREN texpr RPAREN                { $2 } 
 
 

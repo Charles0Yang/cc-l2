@@ -18,24 +18,39 @@ type type_expr =
 
 type formals = (var * type_expr) list
 
-type oper = ADD | MUL | DIV | SUB 
-
-type unary_oper = NEG 
+type oper = ADD | GTEQ | EQ
 
 type expr = 
        | Integer of loc * int
-       | UnaryOp of loc * unary_oper * expr
        | Op of loc * expr * oper * expr
-       | Seq of loc * (expr list)
+       | Boolean of loc * bool
+       | Var of loc * var
+       | While of loc * expr * expr
+       | Deref of loc * expr
+       | Assign of loc * expr * expr
+       | Let of loc * var * type_expr * expr * expr
+       | LetFun of loc * var * lambda * type_expr * expr
+       | LetRecFun of loc * var * lambda * type_expr * expr
 
 
 and lambda = var * type_expr * expr 
 
 let  loc_of_expr = function 
     | Integer (loc, _)              -> loc 
-    | UnaryOp(loc, _, _)            -> loc 
     | Op(loc, _, _, _)              -> loc 
-	| Seq(loc, _)                   -> loc
+	  | Unit loc                      -> loc
+    | Var (loc, _)                  -> loc
+    | Integer (loc, _)              -> loc
+    | Boolean (loc, _)              -> loc
+    | Deref (loc, _)                -> loc
+    | Assign (loc, _, _)            -> loc
+    | While (loc, _, _)             -> loc
+    | Lambda (loc, _)               -> loc
+    | App (loc, _, _)               -> loc
+    | Let(loc, _, _, _, _)          -> loc 
+    | LetFun(loc, _, _, _, _)       -> loc 
+    | LetRecFun(loc, _, _, _, _)    -> loc 
+    
 
 
 let string_of_loc loc = 
@@ -96,14 +111,11 @@ let eprint_expr e =
 (* useful for degugging *) 
 
 
-let string_of_uop = function 
-  | NEG -> "NEG" 
 
 let string_of_bop = function 
   | ADD -> "ADD" 
-  | MUL  -> "MUL" 
-  | DIV  -> "DIV" 
-  | SUB -> "SUB"
+  | GTEQ -> "GTEQ"
+  | EQUAL -> "EQ"
 
 let mk_con con l = 
     let rec aux carry = function 
@@ -123,12 +135,33 @@ let rec string_of_type = function
 
 let rec string_of_expr = function 
     | Integer (_, n)      -> mk_con "Integer" [string_of_int n] 
-    | UnaryOp(_, op, e)   -> mk_con "UnaryOp" [string_of_uop op; string_of_expr e]
     | Op(_, e1, op, e2)   -> mk_con "Op" [string_of_expr e1; string_of_bop op; string_of_expr e2]
-    | Seq (_, el)         -> mk_con "Seq" [string_of_expr_list el]
+    | Var (_, x)          -> mk_con "Var" [x] 
+    | Integer (_, n)      -> mk_con "Integer" [string_of_int n] 
+    | Boolean (_, b)      -> mk_con "Boolean" [string_of_bool b] 
+    | While (_, e1, e2)   -> mk_con "While" [string_of_expr e1; string_of_expr e2]
+    | Ref(_, e)           -> mk_con "Ref" [string_of_expr e] 
+    | Deref(_, e)         -> mk_con "Deref" [string_of_expr e] 
+    | Assign(_, e1, e2)   -> mk_con "Assign" [string_of_expr e1; string_of_expr e2]
+    | Lambda(_, (x, t, e)) -> mk_con "Lambda" [x; string_of_type t; string_of_expr e]
+    | App(_, e1, e2)      -> mk_con "App" [string_of_expr e1; string_of_expr e2]
+    | Let(_, x, t, e1, e2) -> mk_con "Let" [x; string_of_type t; string_of_expr e1; string_of_expr e2]
+    | LetFun(_, f, (x, t1, e1), t2, e2)      -> 
+          mk_con "LetFun" [
+             f; 
+             mk_con "" [x; string_of_type t1; string_of_expr e1]; 
+             string_of_type t2; 
+             string_of_expr e2]
+    | LetRecFun(_, f, (x, t1, e1), t2, e2)   -> 
+          mk_con "LetRecFun" [
+             f; 
+             mk_con "" [x; string_of_type t1; string_of_expr e1]; 
+             string_of_type t2; 
+             string_of_expr e2]
 
 
 and string_of_expr_list = function 
   | [] -> "" 
   | [e] -> string_of_expr e 
   |  e:: rest -> (string_of_expr e ) ^ "; " ^ (string_of_expr_list rest)
+  
